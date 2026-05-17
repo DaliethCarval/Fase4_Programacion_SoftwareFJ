@@ -1,19 +1,16 @@
 from abc import ABC, abstractmethod
 import logging
 
-# Configuración del archivo log
 logging.basicConfig(
     filename="errores.log",
     level=logging.ERROR,
-    format="%(asctime)s - %(levelname)s - %(message)s"
+    format="%(asctime)s - %(message)s"
 )
 
-# Excepción personalizada
 class ErrorReserva(Exception):
     pass
 
 
-# Clase abstracta Persona
 class Persona(ABC):
 
     @abstractmethod
@@ -21,13 +18,12 @@ class Persona(ABC):
         pass
 
 
-# Clase Cliente
 class Cliente(Persona):
 
     def __init__(self, nombre, correo):
 
-        if not nombre:
-            raise ValueError("El nombre no puede estar vacío")
+        if nombre == "":
+            raise ValueError("Nombre vacío")
 
         if "@" not in correo:
             raise ValueError("Correo inválido")
@@ -35,15 +31,14 @@ class Cliente(Persona):
         self.__nombre = nombre
         self.__correo = correo
 
-    def mostrar(self):
-        return f"Cliente: {self.__nombre}"
-
     @property
     def nombre(self):
         return self.__nombre
 
+    def mostrar(self):
+        return self.__nombre
 
-# Clase abstracta Servicio
+
 class Servicio(ABC):
 
     def __init__(self, nombre, precio):
@@ -55,106 +50,49 @@ class Servicio(ABC):
         pass
 
 
-# Servicio Sala
 class Sala(Servicio):
 
-    def calcular_costo(self, horas):
-        return self.precio * horas
+    def calcular_costo(self, tiempo):
+        return self.precio * tiempo
 
 
-# Servicio Equipo
-class Equipo(Servicio):
-
-    def calcular_costo(self, dias):
-        return self.precio * dias
-
-
-# Servicio Asesoria
-class Asesoria(Servicio):
-
-    def calcular_costo(self, horas):
-        return self.precio * horas
-
-
-# Clase Reserva
 class Reserva:
 
-    def __init__(self, cliente, servicio, duracion):
+    def __init__(self, cliente, servicio, tiempo):
 
-        if duracion <= 0:
-            raise ErrorReserva("Duración inválida")
+        if tiempo <= 0:
+            raise ErrorReserva("Tiempo inválido")
 
         self.cliente = cliente
         self.servicio = servicio
-        self.duracion = duracion
-        self.estado = "Pendiente"
+        self.tiempo = tiempo
 
     def confirmar(self):
 
-        try:
+        costo = self.servicio.calcular_costo(
+            self.tiempo
+        )
 
-            costo = self.servicio.calcular_costo(
-                self.duracion
-            )
-
-            self.estado = "Confirmada"
-
-            print(f"Reserva exitosa")
-            print(f"Cliente: {self.cliente.nombre}")
-            print(f"Servicio: {self.servicio.nombre}")
-            print(f"Costo total: ${costo}")
-
-        except Exception as e:
-
-            logging.error(str(e))
-
-            print("Error al confirmar la reserva")
+        print("Reserva exitosa")
+        print("Cliente:", self.cliente.nombre)
+        print("Servicio:", self.servicio.nombre)
+        print("Costo:", costo)
 
 
-# Lista de operaciones
-operaciones = []
+cliente = Cliente(
+    "Juan",
+    "juan@gmail.com"
+)
 
+servicio = Sala(
+    "Sala VIP",
+    50000
+)
 
-# OPERACIÓN 1
-try:
+reserva = Reserva(
+    cliente,
+    servicio,
+    2
+)
 
-    cliente1 = Cliente(
-        "Juan",
-        "juan@gmail.com"
-    )
-
-    servicio1 = Sala(
-        "Sala VIP",
-        50000
-    )
-
-    reserva1 = Reserva(
-        cliente1,
-        servicio1,
-        2
-    )
-
-    operaciones.append(reserva1)
-
-except Exception as e:
-
-    logging.error(str(e))
-
-
-# OPERACIÓN 2 (inválida)
-try:
-
-    cliente2 = Cliente(
-        "",
-        "correo"
-    )
-
-except Exception as e:
-
-    logging.error(str(e))
-    print("Error:", e)
-
-
-# Ejecutar reservas
-for op in operaciones:
-    op.confirmar()
+reserva.confirmar()
